@@ -1,7 +1,6 @@
 /**
- * Fordert ein AI-Bild von deinem lokalen Proxy an.
- * @param {string} prompt - Beschreibung, was auf dem Bild sein soll
- * @returns {Promise<string>} - Die URL des generierten Bildes
+ * @param {string} prompt
+ * @returns {Promise<string>} 
  */
 async function generateImage(prompt) {
   const response = await fetch('http://localhost:3000/api/generate-image', {
@@ -10,8 +9,7 @@ async function generateImage(prompt) {
     body: JSON.stringify({ prompt })
   });
   const data = await response.json();
-  // Die DALL·E-API liefert ein Objekt mit einem "data"-Array:
-  // [ { url: 'https://...' } ]
+
   if (data && data.data && data.data[0] && data.data[0].url) {
     return data.data[0].url;
   } else {

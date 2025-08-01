@@ -21,34 +21,14 @@
   </header>
 
   <main>
-    <!-- Background Overlay -->
-    <div id="bg-overlay"></div>
-
-    <!-- Settings Drawer -->
-    <section id="settings" class="panel settings-panel hidden">
-      <h3>Settings</h3>
-      <label>Theme:
-        <select id="themeSelect">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </label>
-      <label>Font Size:
-        <select id="fontSizeSelect">
-          <option value="small">Small</option>
-          <option value="medium" selected>Medium</option>
-          <option value="large">Large</option>
-        </select>
-      </label>
-      <button id="resetBtn" class="btn">Reset Session</button>
-    </section>
+  
   </main>
 
   <footer class="footer">
     <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
   </footer>
   <script src="scripts/random.js"></script>
-  <script>// Jahr im Footer setzen
+  <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>

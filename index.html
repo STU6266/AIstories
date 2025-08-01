@@ -21,10 +21,7 @@
   </header>
 
   <main>
-    <!-- Background Overlay -->
-    <div id="bg-overlay"></div>
-    <!-- Setup Form -->
-    <section id="setup" class="panel setup-panel">
+    <div id="bg-overlay"></div>    <section id="setup" class="panel setup-panel">
       <h2>Story Setup</h2>
       <form id="setupForm">
 
@@ -70,8 +67,6 @@
       <img id="storyImage" style="max-width: 400px; display:block; margin:1rem auto;" alt="Story Illustration" />
     </section>
     
-
-    <!-- Story View -->
     <section id="story" class="panel story-panel hidden">
       <div class="story-header">
         <div class="timer" id="timer">30:00</div>
@@ -84,14 +79,12 @@
       <div class="decision-overlay hidden" id="decisions"></div>
     </section>
 
-    <!-- History Panel -->
     <aside id="history" class="panel history-panel hidden">
       <h3>History</h3>
       <ul id="historyList"></ul>
       <button id="exportBtn" class="btn">Download Story</button>
     </aside>
 
-    <!-- Settings Drawer -->
     <section id="settings" class="panel settings-panel hidden">
       <h3>Settings</h3>
       <label>Theme:
@@ -119,7 +112,7 @@
   <script src="scripts/storySetup.js"></script>
   <script src="scripts/generateImage.js"></script>
 
-  <script>// Jahr im Footer setzen
+  <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
 </body>

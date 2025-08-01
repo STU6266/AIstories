@@ -1,8 +1,8 @@
 
-require('dotenv').config(); // .env Datei laden
-// openai-proxy.js
+require('dotenv').config();
+
 const express = require('express');
-// const fetch = require('node-fetch'); // v2 verwenden!
+
 const cors = require('cors');
 
 const app = express();
@@ -38,10 +38,9 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// Neuen Endpunkt für Bildgenerierung
 app.post('/api/generate-image', async (req, res) => {
   try {
-    const { prompt } = req.body; // Der Bild-Textprompt
+    const { prompt } = req.body; 
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -49,7 +48,7 @@ app.post('/api/generate-image', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "dall-e-3",  // Alternativ: "dall-e-2"
+        model: "dall-e-3",
         prompt: prompt,
         n: 1,
         size: "1024x1024"
