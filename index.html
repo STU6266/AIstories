@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Killing Time AI Stories</title>
+  <meta name="description" content="Quick interactive AI-driven short stories. Choose duration, theme and enjoy a unique narrative each time.">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo">Killing Time AI Stories</div>
+    <nav class="nav">
+      <ul>
+        <li><a href="index.html">Story Telling</a></li>
+        <li><a href="shortGames.html">Short Games</a></li>
+        <li><a href="BestStories.html">Best Stories</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Background Overlay -->
+    <div id="bg-overlay"></div>
+    <!-- Setup Form -->
+    <section id="setup" class="panel setup-panel">
+      <h2>Story Setup</h2>
+      <form id="setupForm">
+
+        <label>Theme:
+          <select id="themeSelect">
+            <option value="adventure">Adventure</option>
+            <option value="mystery">Mystery</option>
+            <option value="sci-fi">Sci-Fi</option>
+            <option value="fantasy">Fantasy</option>
+            <option value="horror">Horror</option>
+          </select>
+        <div class="sliders two-rows">
+          <div class="slider-row">
+            <label>Violence:
+              <input type="range" id="violence" min="0" max="10" value="5">
+            </label>
+            <label>Humor:
+              <input type="range" id="humor" min="0" max="10" value="5">
+            </label>
+            <label>Romance:
+              <input type="range" id="romance" min="0" max="10" value="5">
+            </label>
+          </div>
+          <div class="slider-row">
+            <label>Fantasy:
+              <input type="range" id="fantasy" min="0" max="10" value="5"> 
+            </label>
+            <label>Darkness:
+              <input type="range" id="realism" min="0" max="10" value="5">
+            </label>
+            <label>Emotion:
+              <input type="range" id="emotion" min="0" max="10" value="5">
+            </label>
+          </div>
+        </div>
+
+        <label>Duration:
+          <input type="number" id="duration" min="15" max="90" placeholder="15-90 minutes">
+        </label>
+        <button type="submit" class="btn start-btn">Start Story</button>
+      </form>
+      <div id="storyBox"></div>
+      <img id="storyImage" style="max-width: 400px; display:block; margin:1rem auto;" alt="Story Illustration" />
+    </section>
+    
+
+    <!-- Story View -->
+    <section id="story" class="panel story-panel hidden">
+      <div class="story-header">
+        <div class="timer" id="timer">30:00</div>
+        <div class="controls">
+          <button id="playTTS" class="btn">Play</button>
+          <button id="pauseTTS" class="btn">Pause</button>
+        </div>
+      </div>
+      <div class="chapters" id="chapters"></div>
+      <div class="decision-overlay hidden" id="decisions"></div>
+    </section>
+
+    <!-- History Panel -->
+    <aside id="history" class="panel history-panel hidden">
+      <h3>History</h3>
+      <ul id="historyList"></ul>
+      <button id="exportBtn" class="btn">Download Story</button>
+    </aside>
+
+    <!-- Settings Drawer -->
+    <section id="settings" class="panel settings-panel hidden">
+      <h3>Settings</h3>
+      <label>Theme:
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label>Font Size:
+        <select id="fontSizeSelect">
+          <option value="small">Small</option>
+          <option value="medium" selected>Medium</option>
+          <option value="large">Large</option>
+        </select>
+      </label>
+      <button id="resetBtn" class="btn">Reset Session</button>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
+  </footer>
+  <script src="scripts/random.js"></script>
+  <script src="scripts/storyAPI.js"></script>
+  <script src="scripts/storySetup.js"></script>
+  <script src="scripts/generateImage.js"></script>
+
+  <script>// Jahr im Footer setzen
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
