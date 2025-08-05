@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Killing Time AI Stories</title>
-  <meta name="description" content="Quick interactive AI-driven short stories. Choose duration, theme and enjoy a unique narrative each time.">
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <title>Killing Time AI Stories – Best Stories</title>
+  <meta name="description" content="View your favorite AI-generated stories with images and ratings.">
+  <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
 </head>
 <body>
   <header class="header">
@@ -14,20 +13,27 @@
     <nav class="nav">
       <ul>
         <li><a href="index.html">Story Telling</a></li>
-        <li><a href="shortGames.html">Short Games</a></li>
-        <li><a href="BestStories.html">Best Stories</a></li>
+        <li><a href="BestStories.html" class="active">Best Stories</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
-  
+    <h1>Best Stories</h1>
+    <div id="bestStoriesContainer">
+      <div class="storyCard" style="min-height:240px;">
+        <img alt="Placeholder" width="220" height="124"
+          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='124'%3E%3Crect width='220' height='124' fill='%23ececec'/%3E%3Ctext x='110' y='70' font-size='16' text-anchor='middle' fill='%23ccc'%3ENo Image%3C/text%3E%3C/svg%3E" />
+        <div class="storyText" style="min-height:48px;">No stories saved yet.</div>
+      </div>
+    </div>
   </main>
 
   <footer class="footer">
     <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
   </footer>
-  <script src="scripts/random.js"></script>
+  <script src="scripts/random.js" defer></script>
+  <script src="scripts/bestStories.js" defer></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
