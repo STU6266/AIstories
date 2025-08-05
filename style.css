@@ -22,12 +22,11 @@ body {
   color: var(--primary);
   min-height: 100vh;
   position: relative;
-  /* fallback background for CLS, similar to bg image! */
   background-color: #bbc3d0;
   transition: background 0.25s;
 }
 main {
-  min-height: calc(100vh - 120px); /* Header + Footer Höhe */
+  min-height: calc(100vh - 120px);
   position: relative;
   background-color: transparent;
   overflow: hidden;
@@ -95,14 +94,14 @@ ul {
   max-width: 640px;
   position: relative;
   z-index: 2;
-  min-height: 520px; /* etwas höher als vorher für Platzreservierung */
+  min-height: 520px;
   box-sizing: border-box;
 }
 .setup-panel,
 .story-panel,
 .history-panel,
 .settings-panel {
-  min-height: 520px; /* einheitlich, genug Platz für Fehler/Story */
+  min-height: 520px;
 }
 .setup-panel {
   margin-top: 3rem;
@@ -205,13 +204,12 @@ input[type="number"] {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  /* Platz bleibt reserviert, egal ob Bild da ist */
 }
 
 .story-img {
   display: block;
-  width: 400px !important;   /* Fix für CLS */
-  height: 225px !important;  /* Fix für CLS */
+  width: 400px !important;
+  height: 225px !important;
   max-width: 400px;
   max-height: 225px;
   object-fit: cover;
@@ -219,7 +217,6 @@ input[type="number"] {
   background: #ececec;
 }
 
-/* fallback, falls kein Bild geladen wird */
 .story-img:not([src]) {
   background: #ececec;
 }
@@ -260,8 +257,8 @@ input[type="number"] {
 }
 .storyCard img {
   display: block;
-  width: 220px !important;  /* Fixiert */
-  height: 124px !important; /* 16:9-Verhältnis */
+  width: 220px !important;
+  height: 124px !important;
   max-width: 220px;
   max-height: 124px;
   aspect-ratio: 16/9;
@@ -292,7 +289,7 @@ input[type="number"] {
   width: 100vw;
   height: 100vh;
   min-height: 100vh;
-  background-color: #bbc3d0; /* fallback, ähnlich wie Bild */
+  background-color: #bbc3d0;
   background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
@@ -366,7 +363,7 @@ input[type="number"] {
   visibility: hidden !important;
   position: absolute !important;
   pointer-events: none;
-  display: block !important; /* Überschreibt evtl. JS */
+  display: block !important;
   top: 0; left: 0;
   width: 100%;
 }

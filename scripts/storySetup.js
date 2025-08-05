@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentChapter = 0;
   let allChapters = [];
 
-  // Progressbar-Update-Funktion
   function updateProgressBar(current, total) {
     let percent = 0;
     if (total > 0) {
@@ -18,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     progressText.textContent = percent + "%";
   }
 
-  // Formular-Submit = Story starten
   setupForm.addEventListener('submit', async function(event) {
     event.preventDefault();
 
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const emotion = document.getElementById('emotion').value;
     const duration = document.getElementById('duration').value;
 
-    // Prompt inkl. Altersangabe!
     const prompt =
       `Write an interactive story for a person who is ${age} years old. The story should be appropriate and engaging for this age group.\n` +
       `Theme: "${theme}".\n` +
@@ -63,14 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
         const storyText = data.choices[0].message.content;
-        // Aufteilen in Kapitel anhand von ### oder "\n\n"
         allChapters = splitChapters(storyText);
 
-        // Kapitel anzeigen (zuerst nur das erste)
         currentChapter = 1;
         showChapters();
 
-        // Story-Image generieren
         const imgElem = document.getElementById('storyImage');
         if (imgElem) {
           imgElem.alt = "Generating image...";
@@ -100,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Funktion zum Anzeigen der Kapitel
   function showChapters() {
     chaptersContainer.innerHTML = "";
     for (let i = 0; i < currentChapter; i++) {
@@ -113,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addNextButtonIfNeeded();
   }
 
-  // Nächster-Kapitel-Button hinzufügen
   function addNextButtonIfNeeded() {
     removeNextButton();
     if (currentChapter < allChapters.length) {
@@ -135,21 +127,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.remove();
   }
 
-  // Utility: Text mit Zeilenumbrüchen formatieren
   function formatText(text) {
     return text.replace(/\n/g, "<br>");
   }
 
-  // Utility: Story in Kapitel aufteilen (Trennzeichen kann angepasst werden!)
   function splitChapters(storyText) {
-    // Trenne an ### oder an doppeltem Zeilenumbruch (je nach wie die API liefert)
     if (storyText.includes('###')) {
       return storyText.split(/###\s*/).filter(Boolean);
     }
     return storyText.split(/\n\s*\n/).filter(Boolean);
   }
 
-  // STAR-Rating (wie gehabt, unverändert)
   const ratingBox = document.getElementById('ratingBox');
   const stars = ratingBox.querySelectorAll('.star');
   let userRating = 0;
@@ -170,7 +158,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function saveBestStory() {
-    // Die komplette Story als Text speichern
     let storyText = allChapters.join('\n\n');
     const storyImage = document.getElementById('storyImage').src;
     const date = new Date().toISOString();
