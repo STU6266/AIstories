@@ -1,26 +1,22 @@
 function buildFinalPrompt(userSettings, randomSettings) {
-  // Ensure no undefined inputs
+  
   if (!userSettings || typeof userSettings !== "object") userSettings = {};
   if (!randomSettings || typeof randomSettings !== "object") randomSettings = {};
 
   let extraText = "";
 
-  // Puzzle inserts
   if (randomSettings.puzzleInserts && Array.isArray(randomSettings.puzzleInserts) && randomSettings.puzzleInserts.length > 0) {
     extraText += "\n" + randomSettings.puzzleInserts.map((p, i) => `PUZZLE #${i + 1}: ${p}`).join("\n");
   }
 
-  // Item-choice inserts
   if (randomSettings.itemChoiceInserts && Array.isArray(randomSettings.itemChoiceInserts) && randomSettings.itemChoiceInserts.length > 0) {
     extraText += "\n" + randomSettings.itemChoiceInserts.map((p, i) => `ITEM CHOICE #${i + 1}: ${p}`).join("\n");
   }
 
-  // Rare bad ending (if present)
   if (randomSettings.rareBadEndingPrompt && typeof randomSettings.rareBadEndingPrompt === "string") {
     extraText += "\n" + randomSettings.rareBadEndingPrompt;
   }
 
-  // Main prompt
   const prompt =
     `Write an interactive, deep and meaningful story for a person who is ${userSettings.age || "unknown"} years old.\n` +
     `The story should be engaging, with strong characters, consistent themes, and natural character development.\n\n` +
@@ -39,7 +35,6 @@ function buildFinalPrompt(userSettings, randomSettings) {
     (extraText ? ("\n\n---\n\n" + extraText + "\n") : "") +
     `\nBegin with the first chapter now.`;
 
-  // Always return a valid string
   return (typeof prompt === "string" && prompt.trim().length > 0) ? prompt : "Write an engaging interactive story.";
 }
 window.buildFinalPrompt = buildFinalPrompt;

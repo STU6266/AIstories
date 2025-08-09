@@ -36,12 +36,10 @@ async function generateStoryFromContext(messages) {
       try { data = JSON.parse(text); } catch { data = { text }; }
     }
 
-    // If already OpenAI-like response
     if (data?.choices?.[0]?.message?.content) {
       return data;
     }
 
-    // Fallbacks for different response shapes
     let content = null;
     if (typeof data?.content === "string") content = data.content;
     else if (typeof data?.message === "string") content = data.message;

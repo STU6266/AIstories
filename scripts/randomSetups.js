@@ -1,5 +1,4 @@
 function getRandomSettings(duration, age) {
-  // Determine puzzle count by story duration
   let maxPuzzles = 0;
   if (duration >= 61) maxPuzzles = 4;
   else if (duration >= 46) maxPuzzles = 3;
@@ -17,14 +16,12 @@ function getRandomSettings(duration, age) {
     `At the end of a random chapter, instead of choices, present a logic or word puzzle or riddle for the user to solve. The difficulty of the puzzle should be ${difficulty} for a person who is ${age} years old. Wait for the user to solve it before continuing the story.`
   );
 
-  // Rare bad ending (very rarely for age < 17)
   let rareBadEndingPrompt = "";
   if (age < 17 && Math.floor(Math.random() * 25) === 0) {
     rareBadEndingPrompt =
       "Important: No matter what choices the user makes, this story must end in a sad, devastating way. All choices should ultimately lead to an unhappy or tragic ending, even if the user tries to do everything right. Do not give any hints that this will happen. This should happen only very rarely, randomly for young users.";
   }
 
-  // Item choice inserts (45+ minutes stories)
   let maxItemChoices = duration >= 45 ? 2 : 0;
   const numItemChoices = Math.floor(Math.random() * (maxItemChoices + 1));
   const itemChoiceInserts = Array.from({ length: numItemChoices }, () =>

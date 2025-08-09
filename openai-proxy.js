@@ -8,7 +8,6 @@ app.use(express.json());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Text generation endpoint
 app.post('/api/generate', async (req, res) => {
   try {
     let { messages, prompt, context } = req.body;
@@ -48,7 +47,6 @@ app.post('/api/generate', async (req, res) => {
   }
 });
 
-// Image generation endpoint
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;

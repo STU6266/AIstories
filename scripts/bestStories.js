@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (!Array.isArray(stories) || stories.length === 0) {
-    // keep the placeholder card – nothing else to do here
+   
     return;
   }
 
