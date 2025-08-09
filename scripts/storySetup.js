@@ -1,176 +1,256 @@
 document.addEventListener('DOMContentLoaded', () => {
   const setupForm = document.getElementById('setupForm');
-  const storyBox = document.getElementById('storyBox');
-  const storyPanel = document.getElementById('story');
   const chaptersContainer = document.getElementById('chapters');
+  const choicesContainer = document.getElementById('choices');
   const progressBar = document.getElementById('progressBar');
   const progressText = document.getElementById('progressText');
-  let currentChapter = 0;
-  let allChapters = [];
+  const storyImage = document.getElementById('storyImage');
+  const historyList = document.getElementById('historyList');
+  const timerEl = document.getElementById('timer');
 
-  function updateProgressBar(current, total) {
-    let percent = 0;
-    if (total > 0) {
-      percent = Math.round((current / total) * 100);
-    }
-    progressBar.style.width = percent + "%";
-    progressText.textContent = percent + "%";
-  }
+  const initialImageSrc = storyImage.src;
+  let storyHistory = [];
+  let currentStory = {};
+  let storySaved = false;
 
-  setupForm.addEventListener('submit', async function(event) {
+  let timerInterval = null;
+  let totalSeconds = 0;
+  let elapsedSeconds = 0;
+
+  document.getElementById('ratingBox').classList.add('hidden');
+  document.getElementById('history').classList.add('hidden');
+
+  setupForm.addEventListener('submit', async function (event) {
     event.preventDefault();
 
-    const theme = document.getElementById('themeSelect').value;
-    const age = document.getElementById('age').value;
-    const violence = document.getElementById('violence').value;
-    const humor = document.getElementById('humor').value;
-    const romance = document.getElementById('romance').value;
-    const fantasy = document.getElementById('fantasy').value;
-    const darkness = document.getElementById('realism').value;
-    const emotion = document.getElementById('emotion').value;
-    const duration = document.getElementById('duration').value;
+    document.getElementById('setup').classList.add('hidden');
+    document.getElementById('story').classList.remove('hidden');
 
-    const prompt =
-      `Write an interactive story for a person who is ${age} years old. The story should be appropriate and engaging for this age group.\n` +
-      `Theme: "${theme}".\n` +
-      `The story should have these characteristics (on a scale from 0 to 10):\n` +
-      `- Violence: ${violence}/10\n` +
-      `- Humor: ${humor}/10\n` +
-      `- Romance: ${romance}/10\n` +
-      `- Fantasy: ${fantasy}/10\n` +
-      `- Darkness: ${darkness}/10\n` +
-      `- Emotion: ${emotion}/10\n` +
-      `The story should take about ${duration} minutes to read and play. Start the story.`;
+    const userSettings = {
+      theme: document.getElementById('themeSelect').value,
+      age: document.getElementById('age').value,
+      violence: document.getElementById('violence').value,
+      humor: document.getElementById('humor').value,
+      romance: document.getElementById('romance').value,
+      fantasy: document.getElementById('fantasy').value,
+      darkness: document.getElementById('darkness').value,
+      emotion: document.getElementById('emotion').value,
+      duration: document.getElementById('duration').value
+    };
 
-    storyBox.innerText = "Generating your story, please wait...";
-    chaptersContainer.innerHTML = '<div class="chapter-placeholder" style="min-height:180px;">Generating story...</div>';
-    updateProgressBar(0, 1);
+    startTimer(userSettings.duration);
 
+    storyHistory = [{ role: 'system', content: 'You are an interactive story engine.' }];
+    const prompt = buildFinalPrompt(userSettings, getRandomSettings(Number(userSettings.duration), Number(userSettings.age)));
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+      alert('ERROR: Prompt is empty or invalid. No request will be sent.');
+      throw new Error('Prompt is empty or invalid.');
+    }
+    storyHistory.push({ role: 'user', content: prompt });
+
+    chaptersContainer.innerHTML = '';
+    updateProgressBar();
+
+    await generateNextChapter();
+  });
+
+  async function generateNextChapter() {
+    chaptersContainer.innerHTML += `<div class="chapter loading-chapter">Loading next chapter...</div>`;
+    choicesContainer.innerHTML = '';
+
+    let data;
     try {
-      const response = await fetch('http://localhost:3000/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: prompt,
-          context: []
-        })
-      });
+      data = await generateStoryFromContext(storyHistory);
+    } catch (error) {
+      const loaders = chaptersContainer.querySelectorAll('.loading-chapter');
+      loaders.forEach(el => el.remove());
+      chaptersContainer.innerHTML += `<div class="chapter">Error loading story. Please try again.</div>`;
+      return;
+    }
 
-      const data = await response.json();
+    const loaders = chaptersContainer.querySelectorAll('.loading-chapter');
+    loaders.forEach(el => el.remove());
 
-      if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-        const storyText = data.choices[0].message.content;
-        allChapters = splitChapters(storyText);
+    if (data?.choices?.[0]?.message?.content) {
+      showChapterAndChoices(data.choices[0].message.content);
+    } else {
+      chaptersContainer.innerHTML += `<div class="chapter">Error loading story. Please try again.</div>`;
+    }
+  }
 
-        currentChapter = 1;
-        showChapters();
+  function showChapterAndChoices(responseText) {
+    const chapterTextArr = [];
+    const choicesArr = [];
+    const lines = responseText.split('\n').filter(l => l.trim().length > 0);
 
-        const imgElem = document.getElementById('storyImage');
-        if (imgElem) {
-          imgElem.alt = "Generating image...";
-          imgElem.setAttribute('width', 400);
-          imgElem.setAttribute('height', 225);
-
-          generateImage("An illustration of the following story scene: " + allChapters[0])
-            .then(url => {
-              imgElem.src = url;
-              imgElem.alt = "Story illustration";
-            })
-            .catch(err => {
-              imgElem.alt = "No image could be generated: " + err.message;
-              imgElem.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='225'%3E%3Crect width='400' height='225' fill='%23ececec'/%3E%3Ctext x='200' y='120' font-size='20' text-anchor='middle' fill='%23ccc'%3ENo%20Image%3C/text%3E%3C/svg%3E";
-            });
-        }
-      } else {
-        chaptersContainer.innerHTML = "Sorry, no story was generated. Please try again.";
-        updateProgressBar(0, 1);
-        const imgElem = document.getElementById('storyImage');
-        if (imgElem) imgElem.removeAttribute('src');
+    let choicesStarted = false;
+    for (let line of lines) {
+      if (/^\s*([-\[\(]?\d+[\]\)]?)|(- )/i.test(line)) {
+        choicesArr.push(line.replace(/^\s*([-\[\(]?\d+[\]\)]?)|(- )\s*/i, ''));
+        choicesStarted = true;
+      } else if (!choicesStarted) {
+        chapterTextArr.push(line);
       }
-
-    } catch (err) {
-      chaptersContainer.innerHTML = "Error generating story: " + err.message;
-      updateProgressBar(0, 1);
     }
-  });
 
-  function showChapters() {
-    chaptersContainer.innerHTML = "";
-    for (let i = 0; i < currentChapter; i++) {
-      const chapterDiv = document.createElement('div');
-      chapterDiv.className = 'chapter';
-      chapterDiv.innerHTML = formatText(allChapters[i]);
-      chaptersContainer.appendChild(chapterDiv);
+    const newChapterDiv = document.createElement('div');
+    newChapterDiv.className = 'chapter';
+    chaptersContainer.appendChild(newChapterDiv);
+    typeWriter(newChapterDiv, chapterTextArr.join('\n'));
+
+    if (chapterTextArr.length > 0) {
+      const chapterText = chapterTextArr.join(' ');
+      generateImage(chapterText).then(imageUrl => {
+        storyImage.src = imageUrl;
+      });
     }
-    updateProgressBar(currentChapter, allChapters.length);
-    addNextButtonIfNeeded();
-  }
 
-  function addNextButtonIfNeeded() {
-    removeNextButton();
-    if (currentChapter < allChapters.length) {
-      const nextBtn = document.createElement('button');
-      nextBtn.textContent = "Next Chapter";
-      nextBtn.className = "btn";
-      nextBtn.id = "nextChapterBtn";
-      nextBtn.style.margin = "1rem auto";
-      nextBtn.onclick = () => {
-        currentChapter++;
-        showChapters();
-      };
-      chaptersContainer.appendChild(nextBtn);
+    choicesContainer.innerHTML = '';
+    if (choicesArr.length > 0) {
+      choicesArr.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.textContent = choice;
+        btn.className = 'btn';
+        btn.onclick = () => {
+          storyHistory.push({ role: 'user', content: 'The user chose: ' + choice });
+          generateNextChapter();
+        };
+        choicesContainer.appendChild(btn);
+      });
+    } else {
+      choicesContainer.innerHTML = '<span>Story finished! 🎉</span>';
+      const storyText = Array.from(document.querySelectorAll('.chapter')).map(ch => ch.innerText).join('\n\n');
+      currentStory = { text: storyText, image: storyImage.src, date: Date.now() };
+      document.getElementById('ratingBox').classList.remove('hidden');
+      document.getElementById('history').classList.remove('hidden');
+
+      if (historyList.querySelector('li') && historyList.querySelector('li').innerText.includes('No stories yet')) {
+        historyList.innerHTML = '';
+      }
+      const themeName = currentStory && currentStory.text ? (currentStory.text.split('\n')[0] || 'Story') : 'Story';
+      const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const storyItem = document.createElement('li');
+      storyItem.textContent = `${themeName} - ${timeString}`;
+      historyList.appendChild(storyItem);
     }
   }
 
-  function removeNextButton() {
-    const btn = document.getElementById('nextChapterBtn');
-    if (btn) btn.remove();
-  }
-
-  function formatText(text) {
-    return text.replace(/\n/g, "<br>");
-  }
-
-  function splitChapters(storyText) {
-    if (storyText.includes('###')) {
-      return storyText.split(/###\s*/).filter(Boolean);
+  function updateProgressBar() {
+    if (totalSeconds > 0) {
+      const percent = Math.min(100, Math.round((elapsedSeconds / totalSeconds) * 100));
+      progressBar.style.width = percent + '%';
+      progressText.textContent = percent + '%';
+      progressBar.setAttribute('aria-valuenow', percent);
+    } else {
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+      progressBar.setAttribute('aria-valuenow', 0);
     }
-    return storyText.split(/\n\s*\n/).filter(Boolean);
   }
 
-  const ratingBox = document.getElementById('ratingBox');
-  const stars = ratingBox.querySelectorAll('.star');
-  let userRating = 0;
+  function startTimer(minutes) {
+    const m = Math.max(1, parseInt(minutes || 30, 10));
+    totalSeconds = m * 60;
+    elapsedSeconds = 0;
+    setTimerDisplay(totalSeconds);
+    updateProgressBar();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      elapsedSeconds += 1;
+      const remaining = Math.max(0, totalSeconds - elapsedSeconds);
+      setTimerDisplay(remaining);
+      updateProgressBar();
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
+      }
+    }, 1000);
+  }
 
+  function setTimerDisplay(sec) {
+    const mm = Math.floor(sec / 60);
+    const ss = sec % 60;
+    timerEl.textContent = `${mm}:${String(ss).padStart(2, '0')}`;
+  }
+
+  function typeWriter(element, text, speed = 22) {
+    element.innerHTML = '';
+    let i = 0;
+    (function typing() {
+      if (i < text.length) {
+        element.innerHTML += text[i] === '\n' ? '<br>' : text[i];
+        i++;
+        setTimeout(typing, speed);
+      }
+    })();
+  }
+
+  const stars = document.querySelectorAll('#ratingBox .star');
+  const ratingMessage = document.getElementById('ratingMessage');
   stars.forEach(star => {
-    star.addEventListener('click', function() {
-      userRating = parseInt(this.dataset.value);
-      stars.forEach((s, i) => {
-        s.classList.toggle('selected', i < userRating);
-      });
-      document.getElementById('ratingMessage').textContent = `You rated this story ${userRating} stars.`;
-
-      if (userRating >= 4) {
-        saveBestStory();
-        document.getElementById('ratingMessage').textContent += " Story saved to Best Stories!";
-      }
+    star.addEventListener('mouseover', () => {
+      const val = parseInt(star.dataset.value);
+      stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value) <= val));
+    });
+  });
+  document.getElementById('ratingBox').addEventListener('mouseleave', () => {
+    if (!storySaved) stars.forEach(s => s.classList.remove('selected'));
+    else if (currentStory.rating) {
+      stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value) <= currentStory.rating));
+    }
+  });
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      if (storySaved) return;
+      const ratingVal = parseInt(star.dataset.value);
+      stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value) <= ratingVal));
+      ratingMessage.textContent = 'Story saved!';
+      currentStory.rating = ratingVal;
+      const bestStories = JSON.parse(localStorage.getItem('bestStories')) || [];
+      bestStories.push({ text: currentStory.text, image: currentStory.image, rating: ratingVal, date: currentStory.date });
+      localStorage.setItem('bestStories', JSON.stringify(bestStories));
+      storySaved = true;
     });
   });
 
-  function saveBestStory() {
-    let storyText = allChapters.join('\n\n');
-    const storyImage = document.getElementById('storyImage').src;
-    const date = new Date().toISOString();
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    if (!currentStory.text) return;
+    const blob = new Blob([currentStory.text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'story.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 
-    let bestStories = JSON.parse(localStorage.getItem('bestStories')) || [];
+  document.getElementById('themeSwitch').addEventListener('change', (e) => {
+    document.body.classList.toggle('dark', e.target.value === 'dark');
+  });
 
-    bestStories.push({
-      text: storyText,
-      image: storyImage,
-      rating: userRating,
-      date: date
-    });
+  const htmlEl = document.documentElement;
+  document.getElementById('fontSizeSelect').addEventListener('change', (e) => {
+    htmlEl.classList.remove('small-font', 'medium-font', 'large-font');
+    if (e.target.value === 'small') htmlEl.classList.add('small-font');
+    else if (e.target.value === 'large') htmlEl.classList.add('large-font');
+  });
 
-    localStorage.setItem('bestStories', JSON.stringify(bestStories));
-  }
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('story').classList.add('hidden');
+    document.getElementById('setup').classList.remove('hidden');
+    document.getElementById('history').classList.add('hidden');
+    document.getElementById('ratingBox').classList.add('hidden');
+    chaptersContainer.innerHTML = '<div class="chapter-placeholder" style="min-height:180px;">Your story will appear here...</div>';
+    choicesContainer.innerHTML = '';
+    storyImage.src = initialImageSrc;
+    storySaved = false;
+    currentStory = {};
+    historyList.innerHTML = '<li style="min-height:48px;">No stories yet.</li>';
+    if (timerInterval) clearInterval(timerInterval);
+    timerEl.textContent = '00:00';
+    totalSeconds = 0;
+    elapsedSeconds = 0;
+    updateProgressBar();
+  });
 });

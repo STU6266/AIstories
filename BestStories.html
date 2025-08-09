@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Killing Time AI Stories – Best Stories</title>
-  <meta name="description" content="View your favorite AI-generated stories with images and ratings.">
+  <title>Killing Time AI Stories — Best Stories</title>
+  <meta name="description" content="Your favorite AI stories, saved with their images and a quick star rating.">
+  <meta name="theme-color" content="#1E1E2F">
+
+  <meta property="og:title" content="Best Stories • Killing Time AI Stories">
+  <meta property="og:description" content="Flip through your saved interactive stories with images and ratings.">
+  <meta property="og:type" content="website">
+
   <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
 </head>
 <body>
+
   <header class="header">
     <div class="logo">Killing Time AI Stories</div>
-    <nav class="nav">
+    <nav class="nav" aria-label="Main">
       <ul>
         <li><a href="index.html">Story Telling</a></li>
         <li><a href="BestStories.html" class="active">Best Stories</a></li>
@@ -18,20 +25,33 @@
     </nav>
   </header>
 
-  <main>
-    <h1>Best Stories</h1>
-    <div id="bestStoriesContainer">
-      <div class="storyCard" style="min-height:240px;">
-        <img alt="Placeholder" width="220" height="124"
-          src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='124'%3E%3Crect width='220' height='124' fill='%23ececec'/%3E%3Ctext x='110' y='70' font-size='16' text-anchor='middle' fill='%23ccc'%3ENo Image%3C/text%3E%3C/svg%3E" />
-        <div class="storyText" style="min-height:48px;">No stories saved yet.</div>
+  <main id="content" role="main">
+    <div id="bg-overlay"></div>
+
+    <section id="bestStoriesSection" class="panel stories-panel" aria-labelledby="bestStoriesHeading">
+      <h2 id="bestStoriesHeading">Best Stories</h2>
+
+      <div id="bestStoriesContainer" role="list" aria-live="polite">
+        <div class="storyCard noStoriesCard" role="listitem" aria-label="No stories saved yet">
+          <img
+            alt="No image yet"
+            width="120"
+            height="74"
+            loading="lazy"
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='74'%3E%3Crect width='120' height='74' fill='%23ececec'/%3E%3Ctext x='60' y='42' font-size='14' text-anchor='middle' fill='%23ccc'%3ENo%20Image%3C/text%3E%3C/svg%3E">
+          <div class="storyText noStoriesText">
+            <span style="font-size:1.6em;">📭</span><br>
+            No stories saved yet.
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   </main>
 
   <footer class="footer">
     <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
   </footer>
+
   <script src="scripts/random.js" defer></script>
   <script src="scripts/bestStories.js" defer></script>
   <script>

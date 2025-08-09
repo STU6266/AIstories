@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Killing Time AI Stories</title>
+  <title>Killing Time AI Stories – Interactive Short Story Generator</title>
   <meta name="description" content="Quick interactive AI-driven short stories. Choose duration, theme and enjoy a unique narrative each time.">
+  <meta name="author" content="Killing Time AI Stories Team">
   <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
 </head>
 <body>
   <header class="header">
     <div class="logo">Killing Time AI Stories</div>
-    <nav class="nav">
+    <nav class="nav" aria-label="Main">
       <ul>
         <li><a href="index.html" class="active">Story Telling</a></li>
         <li><a href="BestStories.html">Best Stories</a></li>
@@ -53,8 +54,8 @@
             <label for="fantasy">Fantasy:
               <input type="range" id="fantasy" min="0" max="10" value="5">
             </label>
-            <label for="realism">Darkness:
-              <input type="range" id="realism" min="0" max="10" value="5">
+            <label for="darkness">Darkness:
+              <input type="range" id="darkness" min="0" max="10" value="5">
             </label>
             <label for="emotion">Emotion:
               <input type="range" id="emotion" min="0" max="10" value="5">
@@ -67,6 +68,17 @@
         </label>
         <button type="submit" class="btn start-btn">Start Story</button>
       </form>
+    </section>
+
+    <section id="story" class="panel story-panel hidden">
+      <div class="story-header">
+        <div class="timer" id="timer">00:00</div>
+        <div class="controls">
+          <button id="playTTS" class="btn">Play</button>
+          <button id="pauseTTS" class="btn">Pause</button>
+        </div>
+      </div>
+
       <div class="story-img-wrapper">
         <img
           id="storyImage"
@@ -78,19 +90,9 @@
           loading="lazy"
         />
       </div>
-    </section>
-
-    <section id="story" class="panel story-panel hidden">
-      <div class="story-header">
-        <div class="timer" id="timer">30:00</div>
-        <div class="controls">
-          <button id="playTTS" class="btn">Play</button>
-          <button id="pauseTTS" class="btn">Pause</button>
-        </div>
-      </div>
 
       <div id="progressBarWrapper" style="width:100%;margin-bottom:16px;">
-        <div id="progressBar" style="width:0%;height:12px;background:#FFC857;border-radius:8px;transition:width 0.3s;"></div>
+        <div id="progressBar" style="width:0%;height:12px;background:#FFC857;border-radius:8px;transition:width 0.3s;" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div id="progressText" style="font-size:0.98rem;color:#888;margin-top:2px;text-align:right;">0%</div>
       </div>
 
@@ -98,18 +100,19 @@
         <div class="chapter-placeholder" style="min-height:180px;">Your story will appear here...</div>
       </div>
       <div class="decision-overlay hidden" id="decisions"></div>
+      <div id="choices"></div>
     </section>
 
     <div id="ratingBox">
-      <span class="star" data-value="1">&#9733;</span>
-      <span class="star" data-value="2">&#9733;</span>
-      <span class="star" data-value="3">&#9733;</span>
-      <span class="star" data-value="4">&#9733;</span>
-      <span class="star" data-value="5">&#9733;</span>
+      <span class="star" data-value="1" role="button" aria-label="1 star out of 5" tabindex="0">&#9733;</span>
+      <span class="star" data-value="2" role="button" aria-label="2 stars out of 5" tabindex="0">&#9733;</span>
+      <span class="star" data-value="3" role="button" aria-label="3 stars out of 5" tabindex="0">&#9733;</span>
+      <span class="star" data-value="4" role="button" aria-label="4 stars out of 5" tabindex="0">&#9733;</span>
+      <span class="star" data-value="5" role="button" aria-label="5 stars out of 5" tabindex="0">&#9733;</span>
       <span id="ratingMessage"></span>
     </div>
 
-    <aside id="history" class="panel history-panel hidden">
+    <aside id="history" class="panel history-panel hidden" aria-label="Story history">
       <h3>History</h3>
       <ul id="historyList"><li style="min-height:48px;">No stories yet.</li></ul>
       <button id="exportBtn" class="btn">Download Story</button>
@@ -138,9 +141,12 @@
     <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
   </footer>
   <script src="scripts/random.js" defer></script>
+  <script src="scripts/randomSetups.js" defer></script>
+  <script src="scripts/finalPrompt.js" defer></script>
   <script src="scripts/storyAPI.js" defer></script>
-  <script src="scripts/storySetup.js" defer></script>
   <script src="scripts/generateImage.js" defer></script>
+  <script src="scripts/storySetup.js" defer></script>
+
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>

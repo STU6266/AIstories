@@ -106,11 +106,6 @@ ul {
 .setup-panel {
   margin-top: 3rem;
 }
-.story-panel,
-.history-panel,
-.settings-panel {
-  display: none;
-}
 
 /* ----------- Sliders ----------- */
 .sliders {
@@ -232,9 +227,10 @@ input[type="number"] {
   color: #ccc;
   transition: color 0.2s;
 }
-.star.selected,
-.star:hover,
-.star:hover ~ .star {
+.star:hover {
+  color: #FFC857;
+}
+.star.selected {
   color: #FFC857;
 }
 #ratingMessage {
@@ -254,6 +250,11 @@ input[type="number"] {
   max-width: 560px;
   margin-left: auto;
   margin-right: auto;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.storyCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
 }
 .storyCard img {
   display: block;
@@ -366,4 +367,90 @@ input[type="number"] {
   display: block !important;
   top: 0; left: 0;
   width: 100%;
+}
+
+/* ----------- No Stories Card ----------- */
+.noStoriesCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.55);
+  border-radius: 16px;
+  box-shadow: 0 2px 18px #5551;
+  min-height: 240px;
+  margin-top: 2.5rem;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.noStoriesText {
+  margin-top: 1.2rem;
+  text-align: center;
+  font-size: 1.19rem;
+  color: #26323b;
+  opacity: 0.84;
+  letter-spacing: 0.01em;
+  font-weight: 500;
+}
+.noStoriesCard img {
+  margin-top: 1.2rem;
+  margin-bottom: 1.2rem;
+  opacity: 0.73;
+  border-radius: 12px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ----------- Theme & Font Size ----------- */
+body.dark {
+  background: #1E1E2F;
+  color: #F2F2F2;
+}
+.dark .panel {
+  background: #2E2E3A;
+  color: #F2F2F2;
+}
+.dark input,
+.dark select,
+.dark textarea {
+  background: #333;
+  color: #F2F2F2;
+  border-color: #555;
+}
+.dark .storyCard {
+  background: #2E2E3A;
+}
+.dark .storyText {
+  color: #F2F2F2;
+}
+.dark .nav a {
+  color: #fff;
+}
+.dark .nav a.active,
+.dark .nav a:hover {
+  background: #FFC857;
+  color: #1E1E2F;
+}
+.dark .header,
+.dark .footer {
+  background: #1E1E2F;
+  color: #fff;
+}
+.dark .storyCard img {
+  background: #444;
+}
+.dark .ratingStars {
+  color: #FFC857;
+}
+html.small-font {
+  font-size: 14px;
+}
+html.medium-font {
+  font-size: 16px;
+}
+html.large-font {
+  font-size: 18px;
 }
