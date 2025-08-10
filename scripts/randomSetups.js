@@ -25,6 +25,7 @@ function getRandomSettings(duration, age) {
   let maxItemChoices = duration >= 45 ? 2 : 0;
   const numItemChoices = Math.floor(Math.random() * (maxItemChoices + 1));
   const itemChoiceInserts = Array.from({ length: numItemChoices }, () =>
+    
     `At a random chapter, instead of a normal decision or puzzle, let the user choose one item from 3 to 5 possible items. Only describe the items and do NOT say which one is important or useless. Later in the story, make sure that the chosen item either turns out to be very useful, or turns out to be unnecessary or disappointing, depending on the story direction and user choices. Sometimes the chosen item should have no benefit at all, while another unchosen item would have helped greatly. Be creative and vary which items are actually useful or not in each story.`
   );
 

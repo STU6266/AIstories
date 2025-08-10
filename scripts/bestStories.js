@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     stories = [];
   }
 
+
   if (!Array.isArray(stories) || stories.length === 0) {
    
     return;
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const card = document.createElement('div');
     card.className = 'storyCard';
+
     card.setAttribute('role', 'listitem');
     card.tabIndex = 0;
 
@@ -48,4 +50,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     container.appendChild(card);
   });
+  
 });

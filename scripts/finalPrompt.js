@@ -5,6 +5,7 @@ function buildFinalPrompt(userSettings, randomSettings) {
 
   let extraText = "";
 
+
   if (randomSettings.puzzleInserts && Array.isArray(randomSettings.puzzleInserts) && randomSettings.puzzleInserts.length > 0) {
     extraText += "\n" + randomSettings.puzzleInserts.map((p, i) => `PUZZLE #${i + 1}: ${p}`).join("\n");
   }
@@ -37,4 +38,5 @@ function buildFinalPrompt(userSettings, randomSettings) {
 
   return (typeof prompt === "string" && prompt.trim().length > 0) ? prompt : "Write an engaging interactive story.";
 }
+
 window.buildFinalPrompt = buildFinalPrompt;

@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
+
 app.use(express.json());
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -42,7 +43,7 @@ app.post('/api/generate', async (req, res) => {
     }
     res.json(data);
   } catch (err) {
-    console.error('Proxy text error:', err);
+    console.error('Proxy error:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -50,6 +51,7 @@ app.post('/api/generate', async (req, res) => {
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
+
     const r = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -57,6 +59,7 @@ app.post('/api/generate-image', async (req, res) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
+        
         model: 'dall-e-3',
         prompt,
         n: 1,
@@ -72,7 +75,7 @@ app.post('/api/generate-image', async (req, res) => {
     }
 
     const b64 = data?.data?.[0]?.b64_json || null;
-    if (!b64) return res.status(500).json({ error: 'No image in response' });
+    if (!b64) return res.status(500).json({ error: 'No image found' });
 
     const imageUrl = `data:image/png;base64,${b64}`;
     res.json({ imageUrl });
@@ -84,4 +87,5 @@ app.post('/api/generate-image', async (req, res) => {
 const PORT = 3000;
 
 console.log('Proxy started', { file: __filename, mode: 'image:b64_json' });
+
 app.listen(PORT, () => console.log(`Proxy listening on http://localhost:${PORT}`));

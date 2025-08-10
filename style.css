@@ -9,7 +9,7 @@
   --font-heading: 'Merriweather', serif;
 }
 
-/* ----------- Base Styles ----------- */
+/* Main Styles */
 html, body {
   height: 100%;
   min-height: 100vh;
@@ -20,6 +20,7 @@ body {
   font-family: var(--font-main);
   background: var(--accent-light);
   color: var(--primary);
+
   min-height: 100vh;
   position: relative;
   background-color: #bbc3d0;
@@ -52,7 +53,7 @@ ul {
   list-style: none;
 }
 
-/* ----------- Header & Nav ----------- */
+/* Header & Nav */
 .header {
   display: flex;
   justify-content: space-between;
@@ -84,7 +85,7 @@ ul {
   color: var(--primary);
 }
 
-/* ----------- Main Panels ----------- */
+/* Main Panels */
 .panel {
   background: #fff;
   border-radius: var(--border-radius);
@@ -99,6 +100,7 @@ ul {
 }
 .setup-panel,
 .story-panel,
+
 .history-panel,
 .settings-panel {
   min-height: 520px;
@@ -107,7 +109,7 @@ ul {
   margin-top: 3rem;
 }
 
-/* ----------- Sliders ----------- */
+/* Sliders */
 .sliders {
   margin: 1.5rem 0;
 }
@@ -131,7 +133,7 @@ input[type="range"] {
   width: 120px;
 }
 
-/* ----------- Form & Button ----------- */
+/* Form & Button */
 input, select {
   padding: 0.5rem 0.7rem;
   border-radius: 0.5rem;
@@ -163,7 +165,7 @@ input[type="number"] {
   transform: scale(1.03);
 }
 
-/* ----------- Progress Bar ----------- */
+/* Progress Bar */
 #progressBarWrapper {
   width: 100%;
   background: #ececec;
@@ -173,6 +175,7 @@ input[type="number"] {
   overflow: hidden;
   position: relative;
 }
+
 #progressBar {
   height: 12px;
   background: #FFC857;
@@ -187,7 +190,7 @@ input[type="number"] {
   text-align: right;
 }
 
-/* ----------- Story Image ----------- */
+/* Story Image */
 .story-img-wrapper {
   width: 100%;
   max-width: 400px;
@@ -206,6 +209,7 @@ input[type="number"] {
   width: 400px !important;
   height: 225px !important;
   max-width: 400px;
+
   max-height: 225px;
   object-fit: cover;
   border-radius: 1rem;
@@ -216,7 +220,7 @@ input[type="number"] {
   background: #ececec;
 }
 
-/* ----------- Rating Stars ----------- */
+/* Rating Stars */
 #ratingBox {
   text-align: center;
   margin: 2rem 0;
@@ -240,7 +244,7 @@ input[type="number"] {
   vertical-align: middle;
 }
 
-/* ----------- Best Stories Cards ----------- */
+/*  Best Stories Cards */
 .storyCard {
   background: #fff;
   border-radius: 1.2rem;
@@ -253,6 +257,7 @@ input[type="number"] {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .storyCard:hover {
+
   transform: translateY(-4px);
   box-shadow: 0 4px 14px rgba(0,0,0,0.15);
 }
@@ -283,7 +288,7 @@ input[type="number"] {
   font-size: 0.92rem;
 }
 
-/* ----------- Overlay/Background ----------- */
+/* Overlay/Background */
 #bg-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -298,9 +303,10 @@ input[type="number"] {
   z-index: 0;
   pointer-events: none;
   transition: background-image 0.25s;
+
 }
 
-/* ----------- Footer ----------- */
+/* Footer */
 .footer {
   background: var(--primary);
   color: #fff;
@@ -312,7 +318,7 @@ input[type="number"] {
   z-index: 2;
 }
 
-/* ----------- Responsive Design ----------- */
+/* Screen Design */
 
 /* big screens */
 @media (min-width: 1200px) {
@@ -343,6 +349,7 @@ input[type="number"] {
     padding: 0.7rem 0.3rem;
     min-height: 350px;
   }
+
   .setup-panel { margin-top: 1rem; }
   .slider-row { flex-direction: column; gap: 0.2rem; }
   .story-img,
@@ -369,7 +376,8 @@ input[type="number"] {
   width: 100%;
 }
 
-/* ----------- No Stories Card ----------- */
+/* No Stories Card */
+
 .noStoriesCard {
   display: flex;
   flex-direction: column;
@@ -404,7 +412,7 @@ input[type="number"] {
   display: none !important;
 }
 
-/* ----------- Theme & Font Size ----------- */
+/*Theme & Font Size*/
 body.dark {
   background: #1E1E2F;
   color: #F2F2F2;
@@ -413,6 +421,7 @@ body.dark {
   background: #2E2E3A;
   color: #F2F2F2;
 }
+
 .dark input,
 .dark select,
 .dark textarea {
@@ -445,6 +454,7 @@ body.dark {
 .dark .ratingStars {
   color: #FFC857;
 }
+
 html.small-font {
   font-size: 14px;
 }

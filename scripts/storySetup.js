@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const timerEl = document.getElementById('timer');
 
   const initialImageSrc = storyImage.src;
+
   let storyHistory = [];
   let currentStory = {};
   let storySaved = false;
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let timerInterval = null;
   let totalSeconds = 0;
   let elapsedSeconds = 0;
+
 
   document.getElementById('ratingBox').classList.add('hidden');
   document.getElementById('history').classList.add('hidden');
@@ -43,8 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     storyHistory = [{ role: 'system', content: 'You are an interactive story engine.' }];
     const prompt = buildFinalPrompt(userSettings, getRandomSettings(Number(userSettings.duration), Number(userSettings.age)));
     if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
-      alert('ERROR: Prompt is empty or invalid. No request will be sent.');
-      throw new Error('Prompt is empty or invalid.');
+      alert('ERROR: Prompt is empty or wrong. No request will be sent.');
+      throw new Error('Prompt is empty or wrong.');
     }
     storyHistory.push({ role: 'user', content: prompt });
 
@@ -52,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProgressBar();
 
     await generateNextChapter();
+
   });
 
   async function generateNextChapter() {
@@ -61,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let data;
     try {
       data = await generateStoryFromContext(storyHistory);
+
     } catch (error) {
       const loaders = chaptersContainer.querySelectorAll('.loading-chapter');
       loaders.forEach(el => el.remove());
@@ -79,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showChapterAndChoices(responseText) {
+
     const chapterTextArr = [];
     const choicesArr = [];
     const lines = responseText.split('\n').filter(l => l.trim().length > 0);
@@ -100,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (chapterTextArr.length > 0) {
       const chapterText = chapterTextArr.join(' ');
+
       generateImage(chapterText).then(imageUrl => {
         storyImage.src = imageUrl;
       });
@@ -118,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         choicesContainer.appendChild(btn);
       });
     } else {
-      choicesContainer.innerHTML = '<span>Story finished! 🎉</span>';
+      choicesContainer.innerHTML = '<span>Story finished!</span>';
       const storyText = Array.from(document.querySelectorAll('.chapter')).map(ch => ch.innerText).join('\n\n');
       currentStory = { text: storyText, image: storyImage.src, date: Date.now() };
       document.getElementById('ratingBox').classList.remove('hidden');
@@ -134,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
       historyList.appendChild(storyItem);
     }
   }
+
 
   function updateProgressBar() {
     if (totalSeconds > 0) {
@@ -154,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elapsedSeconds = 0;
     setTimerDisplay(totalSeconds);
     updateProgressBar();
+
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(() => {
       elapsedSeconds += 1;
@@ -187,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const stars = document.querySelectorAll('#ratingBox .star');
   const ratingMessage = document.getElementById('ratingMessage');
   stars.forEach(star => {
+
     star.addEventListener('mouseover', () => {
       const val = parseInt(star.dataset.value);
       stars.forEach(s => s.classList.toggle('selected', parseInt(s.dataset.value) <= val));
@@ -241,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('setup').classList.remove('hidden');
     document.getElementById('history').classList.add('hidden');
     document.getElementById('ratingBox').classList.add('hidden');
-    chaptersContainer.innerHTML = '<div class="chapter-placeholder" style="min-height:180px;">Your story will appear here...</div>';
+    chaptersContainer.innerHTML = '<div class="chapter-placeholder" style="min-height:180px;">Your story will appear here</div>';
     choicesContainer.innerHTML = '';
     storyImage.src = initialImageSrc;
     storySaved = false;
@@ -250,6 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (timerInterval) clearInterval(timerInterval);
     timerEl.textContent = '00:00';
     totalSeconds = 0;
+    
     elapsedSeconds = 0;
     updateProgressBar();
   });

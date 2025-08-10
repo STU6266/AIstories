@@ -1,6 +1,6 @@
 async function generateStoryFromContext(messages) {
   try {
-    // Prepare messages array and prompt string
+
     const safeMessages = Array.isArray(messages) ? messages.filter(m => m && typeof m === "object") : [];
     const userContent = safeMessages
       .map(m => (typeof m.content === "string" ? m.content : ""))
@@ -9,7 +9,7 @@ async function generateStoryFromContext(messages) {
 
     const promptString = userContent || "Write an engaging interactive story.";
 
-    // Send both messages and prompt/context to support either format
+
     const body = {
       messages: safeMessages,
       prompt: promptString,
@@ -29,6 +29,7 @@ async function generateStoryFromContext(messages) {
 
     const contentType = response.headers.get("content-type") || "";
     let data;
+    
     if (contentType.includes("application/json")) {
       data = await response.json();
     } else {
