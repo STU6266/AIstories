@@ -1,4 +1,4 @@
-async function generateImage(prompt) {
+export async function generateImage(prompt) {
   const r = await fetch('http://localhost:3000/api/generate-image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -16,4 +16,3 @@ async function generateImage(prompt) {
 
   throw new Error('No image generated');
 }
-window.generateImage = generateImage;

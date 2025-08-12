@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Killing Time AI Stories – Interactive Short Story Generator</title>
-  <meta name="description" content="Quick interactive AI short stories. Choose duration, theme to play a different game every time.">
-  <meta name="author" content="Killing Time AI Stories Team">
+  <meta name="description" content="Quick interactive AI-driven short stories. Choose duration, theme and enjoy a unique narrative each time." />
   <link rel="stylesheet" href="style.css" media="print" onload="this.media='all'">
 </head>
 <body>
   <header class="header">
     <div class="logo">Killing Time AI Stories</div>
-    <nav class="nav" aria-label="Main">
+    <nav class="nav" aria-label="Main navigation">
       <ul>
         <li><a href="index.html" class="active">Story Telling</a></li>
         <li><a href="BestStories.html">Best Stories</a></li>
@@ -24,7 +23,8 @@
 
     <section id="setup" class="panel setup-panel">
       <h2>Story Setup</h2>
-      <form id="setupForm" autocomplete="off">
+
+      <form id="setupForm" autocomplete="off" novalidate>
         <label for="themeSelect">Theme:</label>
         <select id="themeSelect">
           <option value="adventure">Adventure</option>
@@ -32,11 +32,10 @@
           <option value="sci-fi">Sci-Fi</option>
           <option value="fantasy">Fantasy</option>
           <option value="horror">Horror</option>
-
         </select>
 
         <label for="age">Your Age:
-          <input type="number" id="age" name="age" min="3" max="120" required placeholder="Enter your age">
+          <input type="number" id="age" name="age" min="3" max="120" placeholder="Enter your age">
         </label>
 
         <div class="sliders two-rows">
@@ -67,13 +66,14 @@
         <label for="duration">Duration:
           <input type="number" id="duration" min="15" max="90" placeholder="15-90 minutes" value="30">
         </label>
+
         <button type="submit" class="btn start-btn">Start Story</button>
       </form>
     </section>
 
     <section id="story" class="panel story-panel hidden">
       <div class="story-header">
-        <div class="timer" id="timer">0:00</div>
+        <div class="timer" id="timer">00:00</div>
         <div class="controls">
           <button id="playTTS" class="btn">Play</button>
           <button id="pauseTTS" class="btn">Pause</button>
@@ -93,20 +93,18 @@
       </div>
 
       <div id="progressBarWrapper" style="width:100%;margin-bottom:16px;">
-
         <div id="progressBar" style="width:0%;height:12px;background:#FFC857;border-radius:8px;transition:width 0.3s;" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
         <div id="progressText" style="font-size:0.98rem;color:#888;margin-top:2px;text-align:right;">0%</div>
       </div>
 
       <div class="chapters" id="chapters">
-        <div class="chapter-placeholder" style="min-height:180px;">Your story will apear here</div>
+        <div class="chapter-placeholder" style="min-height:180px;">Your story will appear here...</div>
       </div>
       <div class="decision-overlay hidden" id="decisions"></div>
       <div id="choices"></div>
     </section>
 
     <div id="ratingBox">
-
       <span class="star" data-value="1" role="button" aria-label="1 star out of 5" tabindex="0">&#9733;</span>
       <span class="star" data-value="2" role="button" aria-label="2 stars out of 5" tabindex="0">&#9733;</span>
       <span class="star" data-value="3" role="button" aria-label="3 stars out of 5" tabindex="0">&#9733;</span>
@@ -143,14 +141,8 @@
   <footer class="footer">
     <p>&copy; <span id="year"></span> Killing Time AI Stories</p>
   </footer>
-  <script src="scripts/random.js" defer></script>
-  <script src="scripts/randomSetups.js" defer></script>
 
-  <script src="scripts/finalPrompt.js" defer></script>
-  <script src="scripts/storyAPI.js" defer></script>
-  <script src="scripts/generateImage.js" defer></script>
-  <script src="scripts/storySetup.js" defer></script>
-
+  <script type="module" src="scripts/main.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
   </script>
