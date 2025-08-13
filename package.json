@@ -16,11 +16,11 @@
     "url": "https://github.com/STU6266/AIstories/issues"
   },
   "homepage": "https://github.com/STU6266/AIstories#readme",
-  "description": "",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "openai": "^5.11.0"
-  }
+  },
+  "description": ""
 }

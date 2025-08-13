@@ -1,3 +1,5 @@
+
+
 import { initRandomBackground } from './modules/randomBackground.mjs';
 import { buildFinalPrompt } from './modules/promptBuilder.mjs';
 import { getRandomSettings } from './modules/randomSetups.mjs';
@@ -6,8 +8,11 @@ import { generateImage } from './modules/imageGenerator.mjs';
 import { startTimer, stopTimer, setTimerDisplay, onTick } from './modules/timer.mjs';
 import { saveBestStory } from './modules/storage.mjs';
 import { typeWriter, updateProgressBar } from './modules/ui.mjs';
+import { parseChapterAndChoices, stripMarkdown } from './modules/parser.mjs';
+
 
 initRandomBackground();
+
 
 const setupForm = document.getElementById('setupForm');
 const chaptersContainer = document.getElementById('chapters');
@@ -23,14 +28,18 @@ const ratingMessage = document.getElementById('ratingMessage');
 const stars = document.querySelectorAll('#ratingBox .star');
 
 const initialImageSrc = storyImage.src;
+
 let storyHistory = [];
 let currentStory = {};
 let storySaved = false;
 let totalSeconds = 0;
 let elapsedSeconds = 0;
+let chapterNumber = 1; 
 
 document.getElementById('history').classList.add('hidden');
 ratingBox.classList.add('hidden');
+
+/* Helpers */
 
 function percent() {
   if (totalSeconds <= 0) return 0;
@@ -44,6 +53,24 @@ onTick((secElapsed, secTotal) => {
   updateProgressBar(progressBar, progressText, percent());
 });
 
+
+
+function isFinalChapter(text) {
+  return /(^|\n)\s*(the\s+end|final\s+chapter|epilogue)\s*$/i.test(text);
+}
+
+function pushNextChapterSystemNote() {
+  storyHistory.push({
+    role: 'system',
+    content:
+      `Continue the existing story in exactly one new chapter titled "Chapter ${chapterNumber}: <Your Title>".
+After the chapter, output the line "Choices:" and then 3–5 bullet choices (e.g., "- Do X").
+Do not restart at Chapter 1. Do not summarize previous chapters.`
+  });
+}
+
+/* Flow*/
+
 setupForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -52,6 +79,7 @@ setupForm.addEventListener('submit', async (e) => {
 
   const ageRaw = document.getElementById('age').value;
   const durationRaw = document.getElementById('duration').value;
+
   const userSettings = {
     theme: document.getElementById('themeSelect').value,
     age: Number.isFinite(parseInt(ageRaw, 10)) ? parseInt(ageRaw, 10) : 18,
@@ -66,8 +94,13 @@ setupForm.addEventListener('submit', async (e) => {
 
   startTimer(userSettings.duration);
 
+  chapterNumber = 1;
+
   storyHistory = [{ role: 'system', content: 'You are an interactive story engine.' }];
-  const prompt = buildFinalPrompt(userSettings, getRandomSettings(Number(userSettings.duration), Number(userSettings.age)));
+  const prompt = buildFinalPrompt(
+    userSettings,
+    getRandomSettings(Number(userSettings.duration), Number(userSettings.age))
+  );
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     alert('ERROR: Prompt is empty or invalid.');
     return;
@@ -97,70 +130,96 @@ async function generateNextChapter() {
   const loaders = chaptersContainer.querySelectorAll('.loading-chapter');
   loaders.forEach(el => el.remove());
 
-  if (data?.choices?.[0]?.message?.content) {
-    showChapterAndChoices(data.choices[0].message.content);
-  } else {
+  const full = data?.choices?.[0]?.message?.content;
+  if (!full || typeof full !== 'string') {
     chaptersContainer.innerHTML += `<div class="chapter">Error loading story. Please try again.</div>`;
+    return;
   }
+
+  storyHistory.push({ role: 'assistant', content: full });
+
+  showChapterAndChoices(full);
 }
 
 function showChapterAndChoices(responseText) {
-  const chapterTextArr = [];
-  const choicesArr = [];
-  const lines = responseText.split('\n').filter(l => l.trim().length > 0);
-
-  let choicesStarted = false;
-  for (let line of lines) {
-    if (/^\s*([-\[\(]?\d+[\]\)]?)|(- )/i.test(line)) {
-      choicesArr.push(line.replace(/^\s*([-\[\(]?\d+[\]\)]?)|(- )\s*/i, ''));
-      choicesStarted = true;
-    } else if (!choicesStarted) {
-      chapterTextArr.push(line);
-    }
+  if (isFinalChapter(responseText)) {
+    renderChapterOnly(responseText);
+    finishStory();
+    return;
   }
 
+  const { chapterText, choices } = parseChapterAndChoices(responseText);
+
+ 
   const newChapterDiv = document.createElement('div');
   newChapterDiv.className = 'chapter';
   chaptersContainer.appendChild(newChapterDiv);
-  typeWriter(newChapterDiv, chapterTextArr.join('\n'));
-
-  if (chapterTextArr.length > 0) {
-    const chapterText = chapterTextArr.join(' ');
-    generateImage(chapterText).then(imageUrl => {
-      storyImage.src = imageUrl;
-    });
+  typeWriter(newChapterDiv, (chapterText || responseText).trim());
+ 
+  const forImage = (chapterText || responseText).replace(/\s+/g, ' ').trim();
+  if (forImage) {
+    generateImage(forImage).then(url => { storyImage.src = url; }).catch(() => {});
   }
 
+ 
   choicesContainer.innerHTML = '';
-  if (choicesArr.length > 0) {
-    choicesArr.forEach(choice => {
+  if (choices.length >= 2) {
+    choices.forEach(choice => {
       const btn = document.createElement('button');
       btn.textContent = choice;
       btn.className = 'btn';
       btn.onclick = () => {
         storyHistory.push({ role: 'user', content: 'The user chose: ' + choice });
+        chapterNumber += 1;
+        pushNextChapterSystemNote();
         generateNextChapter();
       };
       choicesContainer.appendChild(btn);
     });
   } else {
-    choicesContainer.innerHTML = '<span>Story finished! 🎉</span>';
-    const storyText = Array.from(document.querySelectorAll('.chapter')).map(ch => ch.innerText).join('\n\n');
-    currentStory = { text: storyText, image: storyImage.src, date: Date.now() };
-    ratingBox.classList.remove('hidden');
-    document.getElementById('history').classList.remove('hidden');
-
-    if (historyList.querySelector('li') && historyList.querySelector('li').innerText.includes('No stories yet')) {
-      historyList.innerHTML = '';
-    }
-    const themeName = currentStory && currentStory.text ? (currentStory.text.split('\n')[0] || 'Story') : 'Story';
-    const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const li = document.createElement('li');
-    li.textContent = `${themeName} - ${timeString}`;
-    historyList.appendChild(li);
-    stopTimer();
+    const btn = document.createElement('button');
+    btn.textContent = 'Continue';
+    btn.className = 'btn';
+    btn.onclick = () => {
+      storyHistory.push({ role: 'user', content: 'Continue the story with the next chapter.' });
+      chapterNumber += 1;
+      pushNextChapterSystemNote();
+      generateNextChapter();
+    };
+    choicesContainer.appendChild(btn);
   }
 }
+
+function renderChapterOnly(text) {
+  const div = document.createElement('div');
+  div.className = 'chapter';
+  chaptersContainer.appendChild(div);
+  typeWriter(div, text.trim());
+}
+
+function finishStory() {
+  choicesContainer.innerHTML = '<span>Story finished! 🎉</span>';
+
+  const storyText = Array.from(document.querySelectorAll('.chapter'))
+    .map(ch => ch.innerText)
+    .join('\n\n');
+
+  currentStory = { text: storyText, image: storyImage.src, date: Date.now() };
+  ratingBox.classList.remove('hidden');
+  document.getElementById('history').classList.remove('hidden');
+
+  if (historyList.querySelector('li') && historyList.querySelector('li').innerText.includes('No stories yet')) {
+    historyList.innerHTML = '';
+  }
+  const themeName = currentStory && currentStory.text ? (currentStory.text.split('\n')[0] || 'Story') : 'Story';
+  const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const li = document.createElement('li');
+  li.textContent = `${themeName} - ${timeString}`;
+  historyList.appendChild(li);
+  stopTimer();
+}
+
+/* Rating & Settings */
 
 stars.forEach(star => {
   star.addEventListener('mouseover', () => {
@@ -220,7 +279,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   storyImage.src = initialImageSrc;
   storySaved = false;
   currentStory = {};
-  historyList.innerHTML = '<li style="min-height:48px;">No stories yet.</li>';
+  chapterNumber = 1;
   stopTimer();
   updateProgressBar(progressBar, progressText, 0);
 });
