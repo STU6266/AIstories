@@ -14,7 +14,7 @@ function placeholderDataUrl() {
 function sanitizePrompt(raw) {
   const txt = String(raw || '').replace(/\s+/g, ' ').trim();
   return (txt.slice(0, 300) || 'calm scenic illustration') +
-         '. friendly, non-violent, no text, soft light';
+         '. friendly, non-violent, no text, soft light'; // harmlose Style-Hinweise
 }
 
 export async function generateImage(prompt) {
@@ -26,16 +26,22 @@ export async function generateImage(prompt) {
     });
 
     let data = {};
-    try { data = await r.json(); } catch { /* ignore */ }
+    try { data = await r.json(); } catch { /* ignore parse errors */ }
 
+    // Robust gegen verschiedene Antwortformen:
+    // - dein Proxy v1.1 → { imageUrl: ... }
+    // - ggf. direkte URL → { url: ... }
+    // - rohes OpenAI → { data: [{ url: ... }] }
     const url =
       data?.imageUrl ||
       data?.url ||
       data?.data?.[0]?.url ||
       null;
 
+    // Immer eine sinnvolle URL zurückgeben (sonst Platzhalter)
     return url || placeholderDataUrl();
   } catch {
+    // Netzwerk-/Proxy-Fehler → Platzhalter
     return placeholderDataUrl();
   }
 }
