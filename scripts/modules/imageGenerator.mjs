@@ -1,4 +1,5 @@
-// Very small guard so images don't break the UI if the proxy soft-fails
+import { API_BASE } from './config.mjs';
+
 function placeholderDataUrl() {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="225">
     <rect width="100%" height="100%" fill="#ececec"/>
@@ -10,38 +11,32 @@ function placeholderDataUrl() {
   return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
 }
 
-// keep the sanitizer minimal on client side
 function sanitizePrompt(raw) {
   const txt = String(raw || '').replace(/\s+/g, ' ').trim();
   return (txt.slice(0, 300) || 'calm scenic illustration') +
-         '. friendly, non-violent, no text, soft light'; // harmlose Style-Hinweise
+         '. friendly, non-violent, no text, soft light';
 }
 
 export async function generateImage(prompt) {
   try {
-    const r = await fetch('http://localhost:3000/api/generate-image', {
+    // ⬇️ HIER die Basis-URL tauschen
+    const r = await fetch(`${API_BASE}/api/generate-image`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: sanitizePrompt(prompt) })
     });
 
     let data = {};
-    try { data = await r.json(); } catch { /* ignore parse errors */ }
+    try { data = await r.json(); } catch {}
 
-    // Robust gegen verschiedene Antwortformen:
-    // - dein Proxy v1.1 → { imageUrl: ... }
-    // - ggf. direkte URL → { url: ... }
-    // - rohes OpenAI → { data: [{ url: ... }] }
     const url =
       data?.imageUrl ||
       data?.url ||
       data?.data?.[0]?.url ||
       null;
 
-    // Immer eine sinnvolle URL zurückgeben (sonst Platzhalter)
     return url || placeholderDataUrl();
   } catch {
-    // Netzwerk-/Proxy-Fehler → Platzhalter
     return placeholderDataUrl();
   }
 }

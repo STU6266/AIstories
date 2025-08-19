@@ -1,148 +1,133 @@
-// openai-proxy.js  — CommonJS + global fetch (Node 18+)
-// Zweck: Localhost-Proxy, der Requests vom Browser annimmt, an OpenAI weitergibt
-// und die Antworten normalisiert (z. B. immer imageUrl zurück).
-
-require('dotenv').config();               // Lädt Umgebungsvariablen aus .env (OPENAI_API_KEY)
+// openai-proxy.js — minimal HTTPS-ready proxy for OpenAI
+require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 
 const app = express();
-app.use(cors());                          // Erlaubt Cross-Origin-Requests (wichtig fürs Frontend)
-app.use(express.json({ limit: '2mb' }));  // JSON-Body-Parser mit Limit
+app.use(express.json({ limit: '2mb' }));
 
-// Lies den OpenAI-API-Key aus der .env
+// ---- CORS: nur deine Origins zulassen (GitHub Pages + optional lokal) ----
+const ALLOWED_ORIGINS = new Set([
+  'http://localhost:5500',                         // optional: Live Server lokal
+  'http://localhost:1234',                         // optional
+  'https://stu6266.github.io'              // <-- HIER deinen GitHub-Namen einsetzen!
+  // Falls du eine Projektseite nutzt, Origin bleibt trotzdem https://<name>.github.io
+]);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-if (!OPENAI_API_KEY) {
-  console.error('❌ Missing OPENAI_API_KEY in .env'); // Früher Hinweis statt späterer 401/403
-}
+if (!OPENAI_API_KEY) console.error('❌ Missing OPENAI_API_KEY in .env');
 
-// --------------------------- Helfer ----------------------------------------
+// Hilfen
+const sanitize = p =>
+  (String(p || '').replace(/\s+/g, ' ').trim().slice(0, 1200) ||
+   'calm scenic illustration, friendly, no text, soft light');
 
-// Minimale Prompt-„Hygiene“: einige Wörter ersetzen, Länge begrenzen.
-// (Das ist bewusst sehr einfach gehalten.)
-function sanitizePrompt(p = '') {
-  if (typeof p !== 'string') return '';
-  return p
-    .replace(/\b(blood|gore|explicit|nsfw)\b/gi, 'soft light') // harsche Begriffe „entschärfen“
-    .slice(0, 1200);                                          // Request klein halten
-}
-
-// Fallback-Bild (SVG als Data-URL), falls OpenAI nicht liefert.
-// Vorteil: Der Client kann IMMER sofort etwas anzeigen, ohne weitere Netzwerkkosten.
-function placeholderDataUri(msg) {
+const placeholder = msg => {
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">
-      <rect width="100%" height="100%" fill="#eee"/>
-      <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-        font-family="Arial" font-size="28" fill="#888">
-        ${msg || 'Image not available'}
-      </text>
-    </svg>`;
-  // Als data:image/svg+xml;base64,... zurückgeben
+  <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024">
+    <rect width="100%" height="100%" fill="#eee"/>
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+      font-family="Arial" font-size="28" fill="#888">${(msg||'Image not available').replace(/</g,'&lt;')}</text>
+  </svg>`;
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
-}
+};
 
-// ----------------------- TEXT: /api/generate-story -------------------------
-// Erwartet vom Client: { messages } oder { prompt, context }
-// Baut ggf. messages selbst und ruft dann OpenAI Chat Completions.
-// Antwort wird 1:1 weitergereicht, weil dein Frontend dieses Format bereits erwartet.
+// -------- TEXT: /api/generate-story --------
 app.post('/api/generate-story', async (req, res) => {
   try {
     let { messages, prompt, context } = req.body || {};
-
-    // Convenience: Wenn nur 'prompt' geliefert wurde, messages automatisch bauen.
     if (!Array.isArray(messages) && prompt) {
       messages = [
-        { role: 'system', content: 'You are an interactive story engine.' }, // Rollen-Priming
-        ...(Array.isArray(context) ? context : []),                          // optionaler Verlauf/Kontext
-        { role: 'user', content: prompt }                                    // eigentlicher User-Input
+        { role: 'system', content: 'You are an interactive story engine.' },
+        ...(Array.isArray(context) ? context : []),
+        { role: 'user', content: String(prompt) }
       ];
     }
-
-    // Minimale Validierung
-    if (!Array.isArray(messages) || messages.length === 0) {
+    if (!Array.isArray(messages) || !messages.length) {
       return res.status(400).json({ error: 'No messages provided.' });
     }
 
-    // Upstream-Call zu OpenAI Chat
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,   // Auth
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',                        // leicht & günstig, gut genug für Kapitel
-        temperature: 0.9,                            // kreativ, aber nicht wild
-        messages                                     
-      })
-    });
-
-    const data = await r.json();
-    if (!r.ok) {
-      // Bei Fehlern gib die OpenAI-Struktur zurück, damit du im Frontend debuggen kannst
-      console.error('OpenAI Chat error:', data);
-      return res.status(500).json({ error: data });
-    }
-    // Erfolgsfall: rohes OpenAI-JSON an den Client
-    res.json(data);
-  } catch (err) {
-    console.error('Proxy text error:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// -------------------- IMAGE: /api/generate-image ---------------------------
-// Erwartet { prompt } vom Frontend, ruft OpenAI Images (DALL·E 3) auf.
-// Gibt IMMER { imageUrl } zurück: entweder echte PNG-Data-URL oder SVG-Platzhalter.
-app.post('/api/generate-image', async (req, res) => {
-  try {
-    const { prompt } = req.body || {};
-
-    // Leicht „entschärfter“ Prompt + harmlose Stilhinweise
-    const safePrompt =
-      (sanitizePrompt(prompt) || 'soft, friendly illustration, PG-rated, watercolor')
-      + ', high quality, no violence, no explicit content';
-
-    // Request an OpenAI Images API
-    const r = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: 'dall-e-3',            // aktuelles Modell
-        prompt: safePrompt,           // unser bereinigter Prompt
-        n: 1,                         // genau 1 Bild
-        size: '1024x1024',            // DALL·E 3 akzeptiert 1024er Formate
-        response_format: 'b64_json'   // base64 zurück (keine Hotlinks)
-      })
+      body: JSON.stringify({ model: 'gpt-4o-mini', temperature: 0.9, messages })
     });
 
     const data = await r.json();
-
-    if (!r.ok) {
-      // Fehler von OpenAI → kontrollierter Fallback (SVG)
-      console.error('OpenAI Image error:', data);
-      const msg = data?.error?.message || 'content policy violation';
-      return res.json({ imageUrl: placeholderDataUri(msg) });
-    }
-
-    // base64 aus der OpenAI-Antwort ziehen
-    const b64 = data?.data?.[0]?.b64_json;
-    if (!b64) return res.json({ imageUrl: placeholderDataUri('No image in response') });
-
-    // Data-URL zurück an den Browser
-    res.json({ imageUrl: `data:image/png;base64,${b64}` });
+    if (!r.ok) return res.status(500).json({ error: data });
+    res.json(data);
   } catch (err) {
-    // Unerwartete Exceptions (Netz down etc.) → ebenfalls Platzhalter
-    console.error('Proxy image error:', err);
-    return res.json({ imageUrl: placeholderDataUri('Image service unavailable') });
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ----------------------------- Start ---------------------------------------
-const PORT = 3000;
-console.log('Proxy started', { file: __filename, mode: 'image:b64_json' });
-app.listen(PORT, () => console.log(`Proxy listening on http://localhost:${PORT}`));
+// -------- IMAGE: /api/generate-image --------
+// Nimmt { prompt, size? }, gibt { imageUrl } (https-URL ODER data:) zurück.
+app.post('/api/generate-image', async (req, res) => {
+  try {
+    const { prompt, size } = req.body || {};
+    const clean = sanitize(prompt);
+
+    // Erst gpt-image-1 (kann 256/512/1024), ohne response_format (manche Accounts mögen das nicht)
+    async function call(model, sz) {
+      const r = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model, prompt: clean, size: sz, n: 1 })
+      });
+      const text = await r.text();
+      let data; try { data = JSON.parse(text); } catch { data = { raw: text }; }
+      return { ok: r.ok, status: r.status, data };
+    }
+
+    const allowedGpt = new Set(['256x256','512x512','1024x1024']);
+    const szGpt = allowedGpt.has(String(size)) ? size : '512x512';
+
+    let resp = await call('gpt-image-1', szGpt);
+
+    // Fallback: dall-e-3 (nur 1024er)
+    const modelErr = !resp.ok && (resp.data?.error?.param === 'model' ||
+                                  String(resp.data?.error?.message||'').toLowerCase().includes('unknown'));
+    if (modelErr) {
+      resp = await call('dall-e-3', '1024x1024');
+    }
+
+    if (!resp.ok) {
+      console.error('OpenAI Image error:', resp.status, resp.data?.error || resp.data);
+      // Letzter Ausweg: Unsplash-Quelle (damit immer ein Bild kommt)
+      const q = encodeURIComponent((clean || 'fantasy concept art').slice(0, 100));
+      return res.json({ imageUrl: `https://source.unsplash.com/1024x1024/?${q}` });
+    }
+
+    // URL oder b64 unterstützen
+    const url = resp.data?.data?.[0]?.url || null;
+    const b64 = resp.data?.data?.[0]?.b64_json || null;
+    if (url) return res.json({ imageUrl: url });
+    if (b64) return res.json({ imageUrl: `data:image/png;base64,${b64}` });
+
+    return res.json({ imageUrl: placeholder('No image in response') });
+  } catch (err) {
+    console.error('Proxy image exception:', err);
+    res.json({ imageUrl: placeholder('Image service unavailable') });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Proxy listening on :${PORT}`));
