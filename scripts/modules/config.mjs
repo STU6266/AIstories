@@ -9,4 +9,4 @@ export const API_BASE =
     ? window.__API_BASE__
     : (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
       ? 'http://localhost:3000'
-      : 'https://dein-proxy.onrender.com'; // <-- HIER deine Render-URL eintragen
+      : 'https://aistories.onrender.com'; // <- DEIN Render-Service

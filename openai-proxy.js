@@ -4,17 +4,18 @@ const express = require('express');
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
-// ---- CORS: NUR deine Origins erlauben ----
-const ALLOWED_ORIGINS = new Set([
-  'http://localhost:5500',            // optional lokal
-  'http://localhost:1234',            // optional lokal
-  'https://<DEIN_USERNAME>.github.io' // <-- GitHub Pages Origin einsetzen!
+// --- CORS: erlaube exakt deine Origins (GitHub Pages + optional lokal)
+const ALLOWED = new Set([
+  'https://stu0206.github.io',  // dein GitHub Pages Origin (laut Render-Log)
+  'https://stu6266.github.io',  // falls du auch diesen Account nutzt – schadet nicht
+  'http://localhost:5500',      // optional: VS Code Live Server
+  'http://localhost:1234'       // optional: andere Dev-Server
 ]);
 
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && ALLOWED_ORIGINS.has(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  const origin = (req.headers.origin || '').toLowerCase();
+  if (ALLOWED.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin); // exakt zurückgeben
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
